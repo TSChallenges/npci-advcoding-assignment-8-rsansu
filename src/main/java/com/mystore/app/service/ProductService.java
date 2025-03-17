@@ -28,12 +28,13 @@ public class ProductService {
 
     public Product getProduct(Integer id) {
         Optional<Product> productOptional = productRepository.findById(id);
-        return productOptional.get();
+        return productOptional.orElse(null);
     }
 
     public Product updateProduct(Integer id, Product product) {
-        Product p = productRepository.findById(id).get();
-        if (p == null) return null;
+        Optional<Product> productOptional = productRepository.findById(id);
+        if (!productOptional.isPresent()) return null;
+        Product p = productOptional.get();
         p.setName(product.getName());
         p.setPrice(product.getPrice());
         p.setCategory(product.getCategory());
@@ -42,23 +43,26 @@ public class ProductService {
         return p;
     }
 
-    public String deleteProduct(Integer id) {
-        Product p = productRepository.findById(id).get();
-        if (p == null) return "Product Not Found";
-        productRepository.delete(p);
-        return "Product Deleted Successfully";
+    public boolean deleteProduct(Integer id) {
+        Optional<Product> productOptional = productRepository.findById(id);
+        if (!productOptional.isPresent()) return false;
+        productRepository.delete(productOptional.get());
+        return true;
     }
 
-    // TODO: Method to search products by name
+    public List<Product> searchProductsByName(String name) {
+        return productRepository.findByNameContaining(name);
+    }
 
+    public List<Product> filterProductsByCategory(String category) {
+        return productRepository.findByCategory(category);
+    }
 
-    // TODO: Method to filter products by category
+    public List<Product> filterProductsByPriceRange(Double minPrice, Double maxPrice) {
+        return productRepository.findByPriceBetween(minPrice, maxPrice);
+    }
 
-
-    // TODO: Method to filter products by price range
-
-
-    // TODO: Method to filter products by stock quantity range
-
-
+    public List<Product> filterProductsByStockQuantityRange(Integer minQuantity, Integer maxQuantity) {
+        return productRepository.findByStockQuantityBetween(minQuantity, maxQuantity);
+    }
 }
